@@ -7,7 +7,7 @@ axios.defaults.withCredentials = true;
 if (config.env === 'production') {
   axios.defaults.baseURL = 'https://eatos.herokuapp.com';
 } else {
-  axios.defaults.baseURL = 'http://localhost:900`/';
+  axios.defaults.baseURL = 'http://localhost:9001/';
 }
 
 export default () => {
