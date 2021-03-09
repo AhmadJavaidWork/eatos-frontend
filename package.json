@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start": "node .",
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "axios": "^0.21.0",
+    "connect-history-api-fallback": "^1.6.0",
     "core-js": "^3.6.5",
+    "express": "^4.17.1",
     "moment": "^2.29.1",
+    "path": "^0.12.7",
+    "serve-static": "^1.14.1",
     "vue": "^2.6.11",
     "vue-page-transition": "^0.2.2",
     "vue-router": "^3.2.0",
