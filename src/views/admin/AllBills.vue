@@ -13,7 +13,7 @@
           :headers="headers"
           :items="allBills"
           :items-per-page="5"
-          class="elevation-2"
+          class="elevation-2 table"
           @click:row="goToViewBll"
         ></v-data-table>
       </v-card>
@@ -63,11 +63,11 @@ export default {
     };
   },
   methods: {
-    goToViewBll() {
-      // this.$router.push({
-      //   name: 'ViewBill',
-      //   params: { id: e.daily_expense_id },
-      // });
+    goToViewBll(e) {
+      this.$router.push({
+        name: 'ViewBill',
+        params: { id: e.id },
+      });
     },
   },
 };
@@ -100,5 +100,8 @@ export default {
 }
 .negativeAmount {
   color: red;
+}
+.table {
+  cursor: pointer;
 }
 </style>

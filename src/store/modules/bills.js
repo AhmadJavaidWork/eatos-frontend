@@ -1,4 +1,4 @@
-import { GET, POST } from './functions';
+import { GET, GETBYID, POST } from './functions';
 import moment from 'moment';
 
 const state = {
@@ -7,12 +7,14 @@ const state = {
     participents: [],
   },
   allBills: [],
+  activeBill: {},
 };
 
 const getters = {
   bills: state => state.bills,
   todaysBill: state => state.todaysBill,
   allBills: state => state.allBills,
+  activeBill: state => state.activeBill,
 };
 
 const actions = {
@@ -20,10 +22,13 @@ const actions = {
     GET(context, '/user-bills', 'saveUserBills');
   },
   saveTodaysBill(context, todaysBill) {
-    POST(context, '/admin/bills', '', todaysBill);
+    POST(context, '/admin/bills', 'saveTodaysBill', todaysBill);
   },
   getAllBills(context) {
     GET(context, '/admin/bills', 'saveAllBills');
+  },
+  getActiveBill(context, id) {
+    GETBYID(context, '/bills', 'saveActiveBill', id);
   },
 };
 
@@ -40,6 +45,9 @@ const mutations = {
     });
     state.bills = bills;
   },
+  saveTodaysBill(state, data) {
+    state.todaysBill = data.billInfo;
+  },
   saveAllBills(state, data) {
     const allBills = data.allBills;
     allBills.forEach(bill => {
@@ -51,6 +59,11 @@ const mutations = {
         .split(',')[1];
     });
     state.allBills = data.allBills;
+  },
+  saveActiveBill(state, data) {
+    const bill = data.bill;
+    bill.participentsInfo = data.participentsInfo;
+    state.activeBill = data.bill;
   },
 };
 

@@ -1,4 +1,4 @@
-import { GET } from './functions';
+import { GET, PUT } from './functions';
 
 const state = {
   wallet: {},
@@ -11,6 +11,9 @@ const getters = {
 const actions = {
   getUserWallet(context) {
     GET(context, '/wallets', 'saveUserWallet');
+  },
+  addBalance(context, payload) {
+    PUT(context, '/admin/wallets', '', { amount: payload.amount }, payload.id);
   },
 };
 

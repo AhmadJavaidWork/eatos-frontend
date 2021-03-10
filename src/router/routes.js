@@ -7,6 +7,7 @@ import Bill from '../views/admin/Bill';
 import AllBills from '../views/admin/AllBills';
 import EditBill from '../views/admin/EditBill';
 import ViewBill from '../views/bills/ViewBill';
+import AddBalance from '../views/admin/AddBalance';
 
 export const routes = [
   {
@@ -73,6 +74,15 @@ export const routes = [
     component: ViewBill,
     meta: {
       requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/add-balance',
+    name: 'AddBalance',
+    component: AddBalance,
+    meta: {
+      requiresAuth: true,
+      admin: true,
     },
   },
 ];

@@ -152,7 +152,6 @@ export default {
       isValid: false,
       amountRules: [v => !!v || 'Amount is required'],
       participents: [],
-      selected: '',
     };
   },
   methods: {
@@ -257,6 +256,7 @@ export default {
       };
       console.log(todaysBill);
       await this.$store.dispatch('saveTodaysBill', todaysBill);
+      this.$router.push('/admin/all-bills');
     },
   },
 };

@@ -45,10 +45,10 @@
           :disabled="!user.name"
           @click="$router.push(link.route).catch(err => {})"
         >
-          <v-list-item-action>
+          <v-list-item-action v-if="checkAdmin(link)">
             <v-icon :disabled="!user.name" left>{{ link.icon }}</v-icon>
           </v-list-item-action>
-          <v-list-item-content>
+          <v-list-item-content v-if="checkAdmin(link)">
             <v-list-item-title>{{ link.text }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
@@ -75,7 +75,30 @@ export default {
       isAuthenticated: false,
       drawer: true,
       links: [
-        { icon: 'mdi-account-box', text: 'Dashboard', route: '/dashboard' },
+        {
+          icon: 'mdi-account-box',
+          text: 'Dashboard',
+          route: '/dashboard',
+          admin: false,
+        },
+        {
+          icon: 'mdi-text-box-plus-outline',
+          text: 'Add Bill',
+          route: '/admin/bill',
+          admin: true,
+        },
+        {
+          icon: 'mdi-text-box-multiple-outline',
+          text: 'All Bills',
+          route: '/admin/all-bills',
+          admin: true,
+        },
+        {
+          icon: 'mdi-wallet-plus-outline',
+          text: 'Add Balace',
+          route: '/admin/add-balance',
+          admin: true,
+        },
       ],
     };
   },
@@ -83,6 +106,11 @@ export default {
     async signout() {
       await this.$store.dispatch('signout');
       this.$router.push('/signin');
+    },
+    checkAdmin(link) {
+      if (link.admin && this.user.role === 'admin') return true;
+      if (!link.admin) return true;
+      return false;
     },
   },
   watch: {
