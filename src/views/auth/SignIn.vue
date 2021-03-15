@@ -59,6 +59,7 @@
 <script>
 import { validationMixin } from 'vuelidate';
 import { required, email } from 'vuelidate/lib/validators';
+import config from '../../config';
 
 export default {
   name: 'SignIn',
@@ -111,8 +112,11 @@ export default {
       if (res.data.error) {
         this.errors = res.data.error;
       } else {
-        window.location.href = 'http://localhost:8080/dashboard';
-        // this.$router.push('/dashboard');
+        if (config.env === 'production') {
+          window.location.href = 'https://eatos.herokuapp.com/dashboard';
+        } else {
+          window.location.href = 'http://localhost:8080/dashboard';
+        }
       }
     },
   },
