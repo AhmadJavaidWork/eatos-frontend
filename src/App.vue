@@ -1,6 +1,7 @@
 <template>
   <v-app>
     <v-main class="app">
+      <notifications group="auth" />
       <Navbar />
       <vue-page-transition name="fade-in-right">
         <router-view></router-view>

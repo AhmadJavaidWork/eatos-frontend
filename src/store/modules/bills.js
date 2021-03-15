@@ -1,34 +1,35 @@
-import { GET, GETBYID, POST } from './functions';
+import { GET, GETBYID, POST, NOTIFY, PUT } from './functions';
 import moment from 'moment';
 
 const state = {
   bills: [],
-  todaysBill: {
-    participents: [],
-  },
+  newBill: { userBills: [] },
   allBills: [],
-  activeBill: {},
+  activeBill: { userBills: [] },
 };
 
 const getters = {
   bills: state => state.bills,
-  todaysBill: state => state.todaysBill,
+  newBill: state => state.newBill,
   allBills: state => state.allBills,
   activeBill: state => state.activeBill,
 };
 
 const actions = {
-  getUserBills(context) {
-    GET(context, '/user-bills', 'saveUserBills');
+  async getUserBills(context) {
+    await GET(context, '/user-bills', 'saveUserBills');
   },
-  saveTodaysBill(context, todaysBill) {
-    POST(context, '/admin/bills', 'saveTodaysBill', todaysBill);
+  saveNewBill(context, newBill) {
+    POST(context, '/admin/bills', 'saveNewBill', newBill);
   },
   getAllBills(context) {
     GET(context, '/admin/bills', 'saveAllBills');
   },
-  getActiveBill(context, id) {
-    GETBYID(context, '/bills', 'saveActiveBill', id);
+  async getActiveBill(context, id) {
+    await GETBYID(context, '/admin/bills', 'saveActiveBill', id);
+  },
+  async updateBill(context, payload) {
+    await PUT(context, '/admin/bills', 'updatBill', payload.bill, payload.id);
   },
 };
 
@@ -45,8 +46,16 @@ const mutations = {
     });
     state.bills = bills;
   },
-  saveTodaysBill(state, data) {
-    state.todaysBill = data.billInfo;
+  saveNewBill(state, data) {
+    if (data.bill) {
+      const notification = {
+        group: 'auth',
+        type: 'success',
+        duration: 3000,
+        title: `Bill Added Successfully`,
+      };
+      NOTIFY(notification);
+    }
   },
   saveAllBills(state, data) {
     const allBills = data.allBills;
@@ -61,9 +70,18 @@ const mutations = {
     state.allBills = data.allBills;
   },
   saveActiveBill(state, data) {
-    const bill = data.bill;
-    bill.participentsInfo = data.participentsInfo;
     state.activeBill = data.bill;
+  },
+  updatBill(state, data) {
+    if (data.bill) {
+      const notification = {
+        group: 'auth',
+        type: 'success',
+        duration: 3000,
+        title: `Bill Updated Successfully`,
+      };
+      NOTIFY(notification);
+    }
   },
 };
 

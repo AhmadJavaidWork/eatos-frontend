@@ -35,7 +35,7 @@
       app
     >
       <v-list>
-        <v-list-item-avatar class="ml-6" size="200">
+        <v-list-item-avatar class="ml-6 mb-15" size="200">
           <v-img :src="user ? user.picture : ''" alt="Profile Avatar"> </v-img>
         </v-list-item-avatar>
         <v-list-item
@@ -82,9 +82,15 @@ export default {
           admin: false,
         },
         {
+          icon: 'mdi-cash-multiple',
+          text: 'Payments',
+          route: '/payments',
+          admin: false,
+        },
+        {
           icon: 'mdi-text-box-plus-outline',
-          text: 'Add Bill',
-          route: '/admin/bill',
+          text: 'New Bill',
+          route: '/admin/new-bill',
           admin: true,
         },
         {
@@ -97,6 +103,12 @@ export default {
           icon: 'mdi-wallet-plus-outline',
           text: 'Add Balace',
           route: '/admin/add-balance',
+          admin: true,
+        },
+        {
+          icon: 'mdi-account-cash',
+          text: 'All Payments',
+          route: '/admin/all-payments',
           admin: true,
         },
       ],

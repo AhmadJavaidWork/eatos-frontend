@@ -6,12 +6,12 @@
       min-height="700px"
       color="white"
     >
-      <h1 class="card-title">All Bills</h1>
+      <h1 class="card-title">All Payments</h1>
       <hr class="mt-5 mb-10" color="#E0E0E0" />
       <v-card class="mx-auto mt-10" width="700px" flat>
         <v-data-table
           :headers="headers"
-          :items="allBills"
+          :items="payments"
           :items-per-page="5"
           class="elevation-2 table"
           @click:row="goToViewBll"
@@ -31,12 +31,12 @@
 import { mapGetters } from 'vuex';
 
 export default {
-  name: 'Dashboard',
+  name: 'Payments',
   computed: {
-    ...mapGetters(['allBills']),
+    ...mapGetters(['payments']),
   },
   async created() {
-    await this.$store.dispatch('getAllBills');
+    await this.$store.dispatch('getPayments');
   },
   data() {
     return {
@@ -45,7 +45,7 @@ export default {
           text: 'Date',
           align: 'start',
           sortable: true,
-          value: 'createdAt',
+          value: 'created_at',
         },
         {
           text: 'Day',
@@ -54,18 +54,11 @@ export default {
           value: 'day',
         },
         {
-          text: 'Chapati Cost',
+          text: 'Amount',
           align: 'start',
           sortable: true,
-          value: 'chapatiCost',
+          value: 'amount',
         },
-        {
-          text: 'Salan Cost',
-          align: 'start',
-          sortable: true,
-          value: 'salanCost',
-        },
-        { text: 'Actions', value: 'actions', sortable: false },
       ],
     };
   },

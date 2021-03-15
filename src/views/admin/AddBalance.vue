@@ -36,6 +36,7 @@
           class="mb-10 mr-2 green lighten-2"
           dark
           depressed
+          :disabled="$v.$invalid"
           >Save</v-btn
         >
         <v-btn
@@ -52,11 +53,26 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import { validationMixin } from 'vuelidate';
+import { required } from 'vuelidate/lib/validators';
 
 export default {
   name: 'Dashboard',
+  mixins: [validationMixin],
   computed: {
     ...mapGetters(['users']),
+    userIdErrors() {
+      const errors = [];
+      if (!this.$v.userId.$dirty) return errors;
+      !this.$v.userId.required && errors.push('Select a user');
+      return errors;
+    },
+    amountErrors() {
+      const errors = [];
+      if (!this.$v.amount.$dirty) return errors;
+      !this.$v.amount.required && errors.push('Enter an amount');
+      return errors;
+    },
   },
   async created() {
     await this.$store.dispatch('getUsers');
@@ -68,6 +84,10 @@ export default {
       this.allUsers.push(participent);
     });
   },
+  validations: {
+    userId: { required },
+    amount: { required },
+  },
   data() {
     return {
       allUsers: [],
@@ -77,6 +97,7 @@ export default {
   },
   methods: {
     async addBalance() {
+      if (this.$v.$invalid) return;
       const userAmount = {
         amount: this.amount,
         id: this.userId,

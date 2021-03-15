@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Api from '../../api';
+import { NOTIFY } from './functions';
 import config from '../../config';
 
 const access_token = config.access_token;
@@ -64,21 +65,27 @@ const actions = {
 const mutations = {
   saveUser(state, data) {
     const user = data.user;
-    const token = data.access_token;
+    const token = data.accessToken;
     state.user = user;
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('token', JSON.stringify(token));
-    localStorage.setItem('expiresAt', new Date().getTime() + 1000 * 60 * 30);
   },
   getUserFromLocalStorage(state) {
     const user = JSON.parse(localStorage.getItem('user'));
     state.user = user;
   },
   signout(state) {
+    const notification = {
+      group: 'auth',
+      type: 'success',
+      duration: 3000,
+      title: `Bye ${state.user.name}`,
+      text: 'See you later',
+    };
+    NOTIFY(notification);
     state.user = {};
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    localStorage.removeItem('expiresAt');
   },
   updateUser(state, user) {
     user.picture = `https://gravatar.com/avatar/${Math.floor(

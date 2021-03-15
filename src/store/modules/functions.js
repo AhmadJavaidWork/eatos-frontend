@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import Api from '../../api';
 import router from '../../router';
 import store from '../../store';
@@ -47,4 +48,15 @@ export const DELETE = async (context, URL, mutation, id) => {
     router.push('/signin');
   }
   if (res.status === 204) context.commit(mutation, id);
+};
+
+export const NOTIFY = notification => {
+  const { group, type, duration, title, text } = notification;
+  Vue.notify({
+    group,
+    type,
+    duration,
+    title,
+    text,
+  });
 };

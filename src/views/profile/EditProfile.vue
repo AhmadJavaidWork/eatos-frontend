@@ -21,7 +21,6 @@
           <v-text-field
             class="ml-10 mr-10 rounded-lg"
             placeholder="Full Name"
-            :rules="nameRules"
             v-model="name"
             outlined
             dense
@@ -30,7 +29,6 @@
             class="ml-10 mr-10 rounded-lg"
             v-model="gender"
             :items="genders"
-            :rules="genderRules"
             small-chips
             placeholder="Gender"
             outlined
@@ -40,7 +38,6 @@
             class="ml-10 mr-10 rounded-lg"
             v-model="mobile"
             placeholder="Phone Number"
-            :rules="numberRules"
             required
             outlined
             dense
@@ -93,9 +90,6 @@ export default {
       gender: '',
       mobile: '',
       genders: ['Male', 'Female', 'Prefer not to say'],
-      // nameRules: [v => this.checkValidName(v)],
-      // genderRules: [v => !!v || 'Please select a gender'],
-      // numberRules: [v => this.checkValidNumber(v)],
       errors: '',
       avatar: null,
       saving: false,

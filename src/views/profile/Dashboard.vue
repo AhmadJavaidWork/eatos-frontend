@@ -12,14 +12,17 @@
         <v-layout row wrap>
           <v-flex xs12 md12 lg12 class="d-flex justify-center">
             <h1 class="label">Remaining Amount</h1>
-            <h1
-              class="value"
-              v-bind:class="{
-                positiveAmount: wallet.amount > 0,
-                negativeAmount: wallet.amount < 0,
-              }"
-            >
-              Rs. {{ wallet.amount }}
+            <h1 class="value">
+              Rs.
+              <span
+                v-bind:class="{
+                  positiveAmount: wallet.balance > 0,
+                  negativeAmount: wallet.balance < 0,
+                  zeroAmount: wallet.balance === 0,
+                }"
+              >
+                {{ wallet.balance }}
+              </span>
             </h1>
           </v-flex>
         </v-layout>
@@ -39,16 +42,27 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import { NOTIFY } from '@/store/modules/functions';
 
 export default {
   name: 'Dashboard',
   computed: {
-    ...mapGetters(['wallet', 'bills']),
+    ...mapGetters(['wallet', 'bills', 'user']),
   },
+
   async created() {
-    const userId = JSON.parse(localStorage.getItem('user')).id;
-    await this.$store.dispatch('getUserWallet', userId);
-    await this.$store.dispatch('getUserBills', userId);
+    await this.$store.dispatch('getUserWallet');
+    await this.$store.dispatch('getUserBills');
+    if (this.prevRoute && this.prevRoute.path === '/') {
+      const notification = {
+        group: 'auth',
+        type: 'success',
+        duration: 3000,
+        title: `Hello ${this.user.name}`,
+        text: 'Nice to see you again',
+      };
+      NOTIFY(notification);
+    }
   },
   data() {
     return {
@@ -72,12 +86,18 @@ export default {
           value: 'amount',
         },
       ],
+      prevRoute: null,
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.prevRoute = from;
+    });
   },
   methods: {
     goToViewBll(e) {
       this.$router.push({
-        name: 'ViewBill',
+        name: 'ViewUserBill',
         params: { id: e.id },
       });
     },
@@ -109,6 +129,9 @@ export default {
 }
 .negativeAmount {
   color: red;
+}
+.zeroAmount {
+  color: blue;
 }
 .table {
   cursor: pointer;

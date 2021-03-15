@@ -6,23 +6,35 @@
       min-height="700px"
       color="white"
     >
-      <h1 class="card-title">All Bills</h1>
+      <h1 class="card-title">Bill Info</h1>
       <hr class="mt-5 mb-10" color="#E0E0E0" />
+      <div class="costs">
+        <v-layout row wrap>
+          <v-flex xs12 md12 lg12 class="d-flex justify-center">
+            <h1 class="label">Chapati Cost</h1>
+            <h1 class="value">Rs. {{ activeBill.chapatiCost }}</h1>
+          </v-flex>
+          <v-flex xs12 md12 lg12 class="d-flex justify-center">
+            <h1 class="label">Salan Cost</h1>
+            <h1 class="value">Rs. {{ activeBill.salanCost }}</h1>
+          </v-flex>
+        </v-layout>
+      </div>
       <v-card class="mx-auto mt-10" width="700px" flat>
         <v-data-table
           :headers="headers"
-          :items="allBills"
+          :items="activeBill.userBills"
           :items-per-page="5"
           class="elevation-2 table"
-          @click:row="goToViewBll"
         >
-          <template v-slot:item.actions="{ item }">
-            <v-icon small class="mr-2" @click="editBill(item)">
-              mdi-pencil
-            </v-icon>
-          </template>
         </v-data-table>
       </v-card>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn class="primary mr-10 mt-10" depressed @click="editBill"
+          >Edit</v-btn
+        >
+      </v-card-actions>
     </v-card>
   </div>
 </template>
@@ -31,52 +43,50 @@
 import { mapGetters } from 'vuex';
 
 export default {
-  name: 'Dashboard',
+  name: 'ViewBill',
   computed: {
-    ...mapGetters(['allBills']),
+    ...mapGetters(['activeBill']),
   },
   async created() {
-    await this.$store.dispatch('getAllBills');
+    if (this.$route.params.id) {
+      await this.$store.dispatch('getActiveBill', this.$route.params.id);
+    }
   },
   data() {
     return {
       headers: [
         {
-          text: 'Date',
+          text: 'Name',
           align: 'start',
           sortable: true,
-          value: 'createdAt',
+          value: 'name',
         },
         {
-          text: 'Day',
+          text: 'Chapati',
           align: 'start',
           sortable: true,
-          value: 'day',
+          value: 'chapati',
         },
         {
-          text: 'Chapati Cost',
+          text: 'Salan',
           align: 'start',
           sortable: true,
-          value: 'chapatiCost',
+          value: 'salan',
         },
         {
-          text: 'Salan Cost',
+          text: 'Charged',
           align: 'start',
           sortable: true,
-          value: 'salanCost',
+          value: 'amount',
         },
-        { text: 'Actions', value: 'actions', sortable: false },
       ],
     };
   },
   methods: {
-    editBill(bill) {
-      this.$router.push({ name: 'EditBill', params: { id: bill.id } });
-    },
-    goToViewBll(e) {
+    editBill() {
       this.$router.push({
-        name: 'ViewBill',
-        params: { id: e.id },
+        name: 'EditBill',
+        params: { id: this.$route.params.id },
       });
     },
   },
@@ -102,6 +112,9 @@ export default {
   font-size: 25px;
   font-weight: 400;
 }
+.costs {
+  margin-top: 20px;
+}
 .sub-amount {
   color: blue;
 }
@@ -110,8 +123,5 @@ export default {
 }
 .negativeAmount {
   color: red;
-}
-.table {
-  cursor: pointer;
 }
 </style>

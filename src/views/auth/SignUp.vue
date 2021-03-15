@@ -128,7 +128,7 @@ export default {
       if (!this.$v.name.$dirty) return errors;
       !this.$v.name.minLength &&
         errors.push('Name must be at least 10 characters long');
-      !this.$v.name.required && errors.push('Name is required.');
+      !this.$v.name.required && errors.push('Name is required');
       return errors;
     },
     emailErrors() {

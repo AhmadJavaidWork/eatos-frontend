@@ -10,24 +10,24 @@
       <hr class="mt-5 mb-10" color="#E0E0E0" />
       <v-card class="mx-auto" width="700px" flat>
         <div class="d-flex justify-end">
-          <v-btn text @click="addMember">
+          <v-btn
+            :disabled="eaters.length === newBill.userBills.length"
+            text
+            @click="addMember"
+          >
             <span>Add Member</span>
             <v-icon dark right>mdi-plus</v-icon>
           </v-btn>
         </div>
         <v-form class="ml-10 mr-10 form" v-model="isValid">
           <label for="members">Members</label>
-          <v-row
-            v-for="(participent, index) in todaysBill.participents"
-            :key="index"
-            dense
-          >
+          <v-row v-for="(eater, index) in newBill.userBills" :key="index" dense>
             <v-col cols="12" sm="12" md="5" lg="5">
               <v-select
-                :change="disableParticipents(participent.userId)"
-                v-model="participent.userId"
+                :change="disableSelected(eater.userId)"
+                v-model="eater.userId"
                 placeholder="Name"
-                :items="participents"
+                :items="eaters"
                 class="rounded-lg"
                 outlined
                 dense
@@ -43,7 +43,7 @@
             >
               <v-checkbox
                 class="mt-1 ml-5"
-                v-model="participent.chapati"
+                v-model="eater.chapati"
                 label="Chapati"
               ></v-checkbox>
             </v-col>
@@ -57,7 +57,7 @@
             >
               <v-checkbox
                 class="mt-1 ml-5"
-                v-model="participent.salan"
+                v-model="eater.salan"
                 label="Salan"
               ></v-checkbox>
             </v-col>
@@ -67,7 +67,7 @@
               sm="4"
               md="3"
               lg="3"
-              v-if="todaysBill.participents.length > 1"
+              v-if="newBill.userBills.length > 1"
             >
               <div class="d-flex justify-end">
                 <v-btn text @click="removeMember(index)">
@@ -84,7 +84,7 @@
                 class="rounded-lg mt-1"
                 placeholder="e.g; 1500"
                 type="number"
-                v-model="todaysBill.salan"
+                v-model="newBill.salan"
                 :rules="amountRules"
                 required
                 outlined
@@ -97,7 +97,7 @@
                 class="rounded-lg mt-1"
                 placeholder="e.g; 1500"
                 type="number"
-                v-model="todaysBill.chapati"
+                v-model="newBill.chapati"
                 :rules="amountRules"
                 required
                 outlined
@@ -109,7 +109,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            @click="saveTodaysBill"
+            @click="saveNewBill"
             class="mb-10 mr-2 green lighten-2"
             dark
             depressed
@@ -133,129 +133,107 @@
 import { mapGetters } from 'vuex';
 
 export default {
-  name: 'Bill',
+  name: 'NewBill',
   computed: {
-    ...mapGetters(['users', 'todaysBill']),
+    ...mapGetters(['users', 'newBill']),
   },
   async created() {
     await this.$store.dispatch('getUsers');
     this.users.forEach(user => {
-      const participent = {
+      const eater = {
         value: user.id,
         text: user.name,
       };
-      this.participents.push(participent);
+      this.eaters.push(eater);
     });
   },
   data() {
     return {
       isValid: false,
       amountRules: [v => !!v || 'Amount is required'],
-      participents: [],
+      eaters: [],
     };
   },
   methods: {
-    disableParticipents() {
-      this.participents.forEach(participent => {
-        var check = false;
-        this.todaysBill.participents.forEach(user => {
-          if (participent.value === user.userId) {
-            check = true;
-          }
-        });
-        if (check) participent.disabled = true;
-        else participent.disabled = false;
+    disableSelected(userId) {
+      this.eaters.forEach(eater => {
+        if (eater.value === userId) {
+          eater.disabled = true;
+        }
       });
     },
     addMember() {
-      this.todaysBill.participents.push({
+      this.newBill.userBills.push({
         chapati: false,
         salan: false,
         amount: 0,
       });
     },
     removeMember(index) {
-      this.todaysBill.participents.splice(index, 1);
+      this.newBill.userBills.splice(index, 1);
     },
     checkValid() {
       var check = true;
-      for (var i = 0; i < this.todaysBill.participents.length; i++) {
-        if (!this.todaysBill.participents[i].userId) {
+      const userBills = this.newBill.userBills;
+      if (!this.isValid) return false;
+      if (userBills.length < 1) return false;
+      userBills.forEach(userBill => {
+        if (!userBill.userId) {
           check = false;
-          break;
+          return;
         }
-        if (
-          this.todaysBill.participents[i].chapati === true &&
-          this.todaysBill.participents[i].salan === true
-        ) {
+        if (userBill.chapati === true && userBill.salan === true) {
           check = false;
-          break;
+        } else {
+          check = true;
+          return;
         }
-        if (!this.isValid) {
-          check = false;
-          break;
-        }
-      }
+      });
       return check;
     },
-    chapatiAndSalanParticipents(participents) {
-      var chapatiParticipents = 0;
-      var salanParticipents = 0;
-      for (var i = 0; i < participents.length; i++) {
-        if (!participents[i].chapati) {
-          chapatiParticipents = chapatiParticipents + 1;
+    chapatiAndSalanEaters(eaters) {
+      var chapatiEaters = 0;
+      var salanEaters = 0;
+      for (var i = 0; i < eaters.length; i++) {
+        if (!eaters[i].chapati) {
+          chapatiEaters++;
         }
-        if (!participents[i].salan) {
-          salanParticipents = salanParticipents + 1;
+        if (!eaters[i].salan) {
+          salanEaters++;
         }
-        participents[i].amount = 0;
+        eaters[i].amount = 0;
       }
-      return { chapatiParticipents, salanParticipents };
+      return { chapatiEaters, salanEaters };
     },
-    divideCostOnParticipents(payload) {
-      const {
-        participents,
-        chapatiCostPerMember,
-        salanCostPerMember,
-      } = payload;
-      for (var i = 0; i < participents.length; i++) {
-        if (!participents[i].chapati) {
-          participents[i].amount =
-            participents[i].amount + chapatiCostPerMember;
+    divideCostOnEaters(payload) {
+      const { eaters, chapatiCostPerEater, salanCostPerEater } = payload;
+      for (var i = 0; i < eaters.length; i++) {
+        if (!eaters[i].chapati) {
+          eaters[i].amount = eaters[i].amount + chapatiCostPerEater;
         }
-        if (!participents[i].salan) {
-          participents[i].amount = participents[i].amount + salanCostPerMember;
+        if (!eaters[i].salan) {
+          eaters[i].amount = eaters[i].amount + salanCostPerEater;
         }
       }
-      return participents;
+      return eaters;
     },
-    async saveTodaysBill() {
-      var participents = this.todaysBill.participents;
-      const {
-        chapatiParticipents,
-        salanParticipents,
-      } = this.chapatiAndSalanParticipents(participents);
-      const chapatiCostPerMember =
-        this.todaysBill.chapati / chapatiParticipents;
-      const salanCostPerMember = this.todaysBill.salan / salanParticipents;
+    async saveNewBill() {
+      var eaters = this.newBill.userBills;
+      const { chapatiEaters, salanEaters } = this.chapatiAndSalanEaters(eaters);
+      const chapatiCostPerEater = this.newBill.chapati / chapatiEaters;
+      const salanCostPerEater = this.newBill.salan / salanEaters;
       const payload = {
-        participents,
-        chapatiCostPerMember,
-        salanCostPerMember,
+        eaters,
+        chapatiCostPerEater,
+        salanCostPerEater,
       };
-      participents = this.divideCostOnParticipents(payload);
-      const participentsIds = [];
-      participents.forEach(participent => {
-        participentsIds.push(participent.userId);
-      });
-      const todaysBill = {
-        chapatiCost: parseInt(this.todaysBill.chapati),
-        salanCost: parseInt(this.todaysBill.salan),
-        participents: participentsIds,
-        participentsInfo: participents,
+      eaters = this.divideCostOnEaters(payload);
+      const newBill = {
+        chapatiCost: parseInt(this.newBill.chapati),
+        salanCost: parseInt(this.newBill.salan),
+        userBills: eaters,
       };
-      console.log(todaysBill);
-      await this.$store.dispatch('saveTodaysBill', todaysBill);
+      await this.$store.dispatch('saveNewBill', newBill);
       this.$router.push('/admin/all-bills');
     },
   },

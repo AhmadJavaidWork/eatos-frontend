@@ -111,7 +111,8 @@ export default {
       if (res.data.error) {
         this.errors = res.data.error;
       } else {
-        this.$router.push('/dashboard').catch(() => {});
+        window.location.href = 'http://localhost:8080/dashboard';
+        // this.$router.push('/dashboard');
       }
     },
   },

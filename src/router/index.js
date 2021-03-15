@@ -13,9 +13,8 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   const token = JSON.parse(localStorage.getItem('token'));
   const user = JSON.parse(localStorage.getItem('user'));
-  const expiresAt = JSON.parse(localStorage.getItem('expiresAt'));
   if (to.meta.requiresAuth) {
-    if (user && token && expiresAt) {
+    if (user && token) {
       if (!user.name && to.path !== '/edit-profile') {
         next('/edit-profile');
       } else if (to.meta.admin) {
@@ -30,7 +29,6 @@ router.beforeEach((to, from, next) => {
     } else {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      localStorage.removeItem('expiresAt');
       next('/signin');
     }
   } else {

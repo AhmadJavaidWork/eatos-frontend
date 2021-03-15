@@ -10,7 +10,11 @@
       <hr class="mt-5 mb-10" color="#E0E0E0" />
       <v-card class="mx-auto" width="700px" flat>
         <div class="d-flex justify-end">
-          <v-btn text @click="addMember">
+          <v-btn
+            :disabled="eaters.length === activeBill.userBills.length"
+            text
+            @click="addMember"
+          >
             <span>Add Member</span>
             <v-icon dark right>mdi-plus</v-icon>
           </v-btn>
@@ -18,15 +22,16 @@
         <v-form class="ml-10 mr-10 form" v-model="isValid">
           <label for="members">Members</label>
           <v-row
-            v-for="(member, index) in activeBill.members"
+            v-for="(eater, index) in activeBill.userBills"
             :key="index"
             dense
           >
             <v-col cols="12" sm="12" md="5" lg="5">
               <v-select
-                v-model="member.user.name"
+                :change="disableSelected(eater.userId)"
+                v-model="eater.userId"
                 placeholder="Name"
-                :items="allMembers"
+                :items="eaters"
                 class="rounded-lg"
                 outlined
                 dense
@@ -42,7 +47,7 @@
             >
               <v-checkbox
                 class="mt-1 ml-5"
-                v-model="member.chapati"
+                v-model="eater.chapati"
                 label="Chapati"
               ></v-checkbox>
             </v-col>
@@ -56,7 +61,7 @@
             >
               <v-checkbox
                 class="mt-1 ml-5"
-                v-model="member.salan"
+                v-model="eater.salan"
                 label="Salan"
               ></v-checkbox>
             </v-col>
@@ -66,7 +71,7 @@
               sm="4"
               md="3"
               lg="3"
-              v-if="activeBill.members.length > 1"
+              v-if="activeBill.userBills.length > 1"
             >
               <div class="d-flex justify-end">
                 <v-btn text @click="removeMember(index)">
@@ -83,7 +88,7 @@
                 class="rounded-lg mt-1"
                 placeholder="e.g; 1500"
                 type="number"
-                v-model="activeBill.salan"
+                v-model="activeBill.salanCost"
                 :rules="amountRules"
                 required
                 outlined
@@ -98,7 +103,7 @@
                 class="rounded-lg mt-1"
                 placeholder="e.g; 1500"
                 type="number"
-                v-model="activeBill.chapati"
+                v-model="activeBill.chapatiCost"
                 :rules="amountRules"
                 required
                 outlined
@@ -138,89 +143,115 @@ import { mapGetters } from 'vuex';
 export default {
   name: 'Bill',
   computed: {
-    ...mapGetters(['activeBill', 'allMembers']),
+    ...mapGetters(['users', 'activeBill']),
   },
   async created() {
-    await this.$store.dispatch('getTodaysCost');
-    await this.$store.dispatch('getAllMembers');
+    await this.$store.dispatch('getUsers');
     if (this.$route.params.id) {
       await this.$store.dispatch('getActiveBill', this.$route.params.id);
     }
+    this.users.forEach(user => {
+      const eater = {
+        value: user.id,
+        text: user.name,
+      };
+      this.eaters.push(eater);
+    });
   },
   data() {
     return {
       isValid: false,
       amountRules: [v => !!v || 'Amount is required'],
+      eaters: [],
     };
   },
   methods: {
+    disableSelected(userId) {
+      this.eaters.forEach(eater => {
+        if (eater.value === userId) {
+          eater.disabled = true;
+        }
+      });
+    },
     addMember() {
       this.activeBill.members.push({
-        user: {},
         chapati: false,
         salan: false,
-        cost: 0,
+        amount: 0,
       });
     },
     removeMember(index) {
-      this.activeBill.members.splice(index, 1);
+      this.activeBill.userBills.splice(index, 1);
     },
     checkValid() {
       var check = true;
-      for (var i = 0; i < this.activeBill.members.length; i++) {
-        if (!this.activeBill.members[i].user.name) check = false;
-        if (
-          this.activeBill.members[i].chapati === false &&
-          this.activeBill.members[i].salan === false
-        )
+      const userBills = this.activeBill.userBills;
+      if (!this.isValid) return false;
+      if (userBills.length < 1) return false;
+      userBills.forEach(userBill => {
+        if (!userBill.userId) {
           check = false;
-        if (!this.isValid) check = false;
-      }
+          return;
+        }
+        if (userBill.chapati === true && userBill.salan === true) {
+          check = false;
+        } else {
+          check = true;
+          return;
+        }
+      });
       return check;
     },
-    chapatiAndSalanMembers(members) {
-      var chapatiMembers = 0;
-      var salanMembers = 0;
-      for (var i = 0; i < members.length; i++) {
-        if (members[i].chapati) chapatiMembers = chapatiMembers + 1;
-        if (members[i].salan) salanMembers = salanMembers + 1;
-        members[i].cost = 0;
+    chapatiAndSalanEaters(eaters) {
+      var chapatiEaters = 0;
+      var salanEaters = 0;
+      for (var i = 0; i < eaters.length; i++) {
+        if (!eaters[i].chapati) {
+          chapatiEaters++;
+        }
+        if (!eaters[i].salan) {
+          salanEaters++;
+        }
+        eaters[i].amount = 0;
       }
-      return { chapatiMembers, salanMembers };
+      return { chapatiEaters, salanEaters };
     },
-    divideCostOnMembers(payload) {
-      const { members, chapatiCostPerMember, salanCostPerMember } = payload;
-      for (var i = 0; i < members.length; i++) {
-        if (members[i].chapati)
-          members[i].cost = members[i].cost + chapatiCostPerMember;
-        if (members[i].salan)
-          members[i].cost = members[i].cost + salanCostPerMember;
-
-        delete members[i].chapati;
-        delete members[i].salan;
+    divideCostOnEaters(payload) {
+      const { eaters, chapatiCostPerEater, salanCostPerEater } = payload;
+      for (var i = 0; i < eaters.length; i++) {
+        if (!eaters[i].chapati) {
+          eaters[i].amount = eaters[i].amount + chapatiCostPerEater;
+        }
+        if (!eaters[i].salan) {
+          eaters[i].amount = eaters[i].amount + salanCostPerEater;
+        }
       }
-      return members;
+      return eaters;
     },
     async updateBill() {
-      var members = this.activeBill.members;
-      const { chapatiMembers, salanMembers } = this.chapatiAndSalanMembers(
-        members
-      );
-      const chapatiCostPerMember = this.activeBill.chapati / chapatiMembers;
-      const salanCostPerMember = this.activeBill.salan / salanMembers;
+      var eaters = this.activeBill.userBills;
+      const { chapatiEaters, salanEaters } = this.chapatiAndSalanEaters(eaters);
+      const chapatiCostPerEater = this.activeBill.chapatiCost / chapatiEaters;
+      const salanCostPerEater = this.activeBill.salanCost / salanEaters;
       const payload = {
-        members,
-        chapatiCostPerMember,
-        salanCostPerMember,
+        eaters,
+        chapatiCostPerEater,
+        salanCostPerEater,
       };
-      members = this.divideCostOnMembers(payload);
+      eaters = this.divideCostOnEaters(payload);
+      eaters.forEach(eater => {
+        delete eater.name;
+      });
       const activeBill = {
-        salan: parseInt(this.activeBill.salan),
-        chapati: parseInt(this.activeBill.chapati),
-        members,
+        id: this.$route.params.id,
+        bill: {
+          salanCost: parseInt(this.activeBill.salanCost),
+          chapatiCost: parseInt(this.activeBill.chapatiCost),
+          userBills: eaters,
+        },
       };
-      console.log(activeBill);
-      await this.$store.dispatch('updateActiveBill', activeBill);
+      await this.$store.dispatch('updateBill', activeBill);
+      this.$router.push('/admin/all-bills');
     },
   },
 };
